@@ -1,6 +1,6 @@
-
 import { cn } from '@/lib/utils';
-import { ButtonHTMLAttributes, ReactNode } from 'react';
+import { ButtonHTMLAttributes, ElementType, ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 
 interface CustomButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'link';
@@ -9,6 +9,8 @@ interface CustomButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean;
   icon?: ReactNode;
   iconPosition?: 'left' | 'right';
+  to?: string; // For react-router Link
+  as?: ElementType; // For polymorphic components
 }
 
 const CustomButton = ({
@@ -20,6 +22,8 @@ const CustomButton = ({
   disabled,
   icon,
   iconPosition = 'left',
+  to,
+  as: Component = 'button',
   ...props
 }: CustomButtonProps) => {
   const baseStyles = 'inline-flex items-center justify-center font-medium transition-colors rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:pointer-events-none';
@@ -38,22 +42,34 @@ const CustomButton = ({
     lg: 'h-12 px-6 py-3 text-lg',
   };
   
+  const buttonStyles = cn(
+    baseStyles,
+    variants[variant],
+    sizes[size],
+    fullWidth && 'w-full',
+    className
+  );
+
+  if (to && Component === 'button') {
+    return (
+      <Link to={to} className={buttonStyles} {...props}>
+        {icon && iconPosition === 'left' && <span className="mr-2">{icon}</span>}
+        {children}
+        {icon && iconPosition === 'right' && <span className="ml-2">{icon}</span>}
+      </Link>
+    );
+  }
+  
   return (
-    <button
-      className={cn(
-        baseStyles,
-        variants[variant],
-        sizes[size],
-        fullWidth && 'w-full',
-        className
-      )}
+    <Component
+      className={buttonStyles}
       disabled={disabled}
       {...props}
     >
       {icon && iconPosition === 'left' && <span className="mr-2">{icon}</span>}
       {children}
       {icon && iconPosition === 'right' && <span className="ml-2">{icon}</span>}
-    </button>
+    </Component>
   );
 };
 
